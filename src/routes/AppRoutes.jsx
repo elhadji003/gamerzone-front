@@ -8,6 +8,7 @@ import Forbidden from '../pages/Forbidden';
 import adminRoutes from './AdminRoutes';
 import PrivateRoutes from './PrivateRoutes';
 import PublicRoutes from './PublicRoutes';
+import Layout from '../layouts/Layout';
 
 const AppRoutes = () => {
     return (
@@ -25,7 +26,9 @@ const AppRoutes = () => {
                         path={path}
                         element={
                             <ProtectedRoute requiredRole="user">
-                                <Element />
+                                <Layout>
+                                    <Element />
+                                </Layout>
                             </ProtectedRoute>
                         }
                     />

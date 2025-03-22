@@ -6,6 +6,7 @@ import { setCredentials } from '../features/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import gamingSetup from '../assets/images/manette3.png';
+import Loader from './Loader';
 
 const Login = ({ onClick }) => {
     const { register, handleSubmit, reset } = useForm();
@@ -88,7 +89,7 @@ const Login = ({ onClick }) => {
                                 : 'bg-pink-500 hover:bg-pink-600'
                                 } text-white`}
                         >
-                            {isLoading ? "Connexion..." : "Login"}
+                            {isLoading ? <Loader/> : "Login"}
                         </button>
                     </form>
 

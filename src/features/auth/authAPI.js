@@ -16,7 +16,6 @@ export const authApi = createApi({
     reducerPath: "authApi",
     baseQuery,
     endpoints: (builder) => ({
-        // ✅ Login
         login: builder.mutation({
             query: (credentials) => ({
                 url: "login/",
@@ -25,12 +24,18 @@ export const authApi = createApi({
             }),
         }),
 
-        // ✅ Récupérer les infos de l'utilisateur (getMe)
+        register: builder.mutation({
+            query: (userData) => ({
+                url: "register/",
+                method: "POST",
+                body: userData,
+            }),
+        }),
+
         getMe: builder.query({
             query: () => "me/",
         }),
 
-        // ✅ Logout
         logout: builder.mutation({
             query: (refreshToken) => ({
                 url: "logout/",
@@ -41,4 +46,9 @@ export const authApi = createApi({
     }),
 });
 
-export const { useLoginMutation, useGetMeQuery, useLogoutMutation } = authApi;
+export const { 
+    useLoginMutation, 
+    useRegisterMutation,
+    useGetMeQuery,
+    useLogoutMutation,
+} = authApi;
