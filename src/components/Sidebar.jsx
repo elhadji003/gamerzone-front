@@ -1,85 +1,101 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faUser, faCog, faBars, faFile } from "@fortawesome/free-solid-svg-icons";
-import imageDefaultUser from "../assets/images/image-1.avif";
+import {
+  faHome,
+  faUser,
+  faCog,
+  faBars,
+  faFile,
+  faGamepad,
+} from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
-import Loader from "./Loader";
 import LogoutButton from "./LogoutButton";
 
-const Sidebar = () => {
-    const [isOpen, setIsOpen] = useState(true);
-    const { user, isLoading, error } = useSelector((state) => state.auth); // Assure-toi que ton slice Redux gère bien ces états
+const Sidebar = ({ isOpen, setIsOpen }) => {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.role === "admin";
 
-    const isAdmin = user?.role === "admin";
+  return (
+    <div
+      className={`fixed left-0 h-full bg-neutral-900 text-white transition-all duration-300 shadow-lg ${
+        isOpen ? "w-64" : "w-20"
+      }`}
+    >
+      {/* Header avec pseudo */}
+      <div className="relative w-full p-4 border-b border-gray-700 flex items-baseline justify-between">
+        {isOpen && (
+          <div>
+            <span className="flex text-xl font-extrabold drop-shadow-neonWhite max-sm:text-sm tracking-wide uppercase">
+              {user?.pseudo}
+            </span>
+            <span className="text-gray-500 text-[12px]">Pseudo</span>
+          </div>
+        )}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`${
+            isOpen ? "" : "m-auto"
+          } text-pink-500 hover:text-pink-400 transition`}
+        >
+          <FontAwesomeIcon icon={faBars} size="lg" />
+        </button>
+      </div>
 
-    return (
-        <div className={`h-auto bg-neutral-900 text-white transition-all duration-300 ${isOpen ? "w-64 h-auto" : "w-20 h-auto"}`}>
-            <div className="p-4 flex items-center justify-between border-b border-gray-700">
-                {isOpen && <span className="text-xl font-bold max-sm:text-sm">FriendShip WebSite</span>}
-                <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="text-white focus:outline-none p-2 m-auto rounded-md transition"
+      {/* Navigation */}
+      <nav className="flex-1 p-4">
+        <ul className="space-y-2">
+          {[
+            {
+              to: isAdmin ? "/dashboard-admin" : "/dashboard-user",
+              icon: isAdmin ? faHome : faGamepad,
+              label: isAdmin ? "Dashboard" : "Gaming Posts",
+            },
+            { to: "/profil-user", icon: faUser, label: "Profil" },
+            { to: "/mes-article", icon: faFile, label: "Mes articles" },
+            { to: "/parametre", icon: faCog, label: "Paramètres" },
+          ].map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                className={({ isActive }) =>
+                  `flex items-center ${
+                    isOpen ? "" : "justify-center"
+                  } p-3 rounded-md font-semibold transition-all duration-200 ${
+                    isActive
+                      ? "bg-pink-500 text-white shadow-lg"
+                      : "hover:bg-black hover:text-pink-500"
+                  }`
+                }
+              >
+                <FontAwesomeIcon
+                  icon={item.icon}
+                  size="lg"
+                  className="transition-transform hover:scale-110 drop-shadow-[0_0_6px_#ec4899]"
+                />
+                <span
+                  className={`ml-3 transition-all duration-200 ${
+                    isOpen ? "opacity-100" : "opacity-0 hidden"
+                  }`}
                 >
-                    <FontAwesomeIcon icon={faBars} size="lg" />
-                </button>
-            </div>
+                  {item.label}
+                </span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-            <nav className="flex-1 p-4">
-                <ul className="space-y-2">
-                    {[
-                        {
-                            to: isAdmin ? "/dashboard-admin" : "/dashboard-user",
-                            icon: faHome,
-                            label: "Dashboard"
-                        },
-                        { to: "/profile", icon: faUser, label: "Profil" },
-                        { to: "/mes-article", icon: faFile, label: "Mes articles" },
-                        { to: "/parametre", icon: faCog, label: "Paramètres" }].map((item) => (
-                            <li key={item.to}>
-                                <NavLink
-                                    to={item.to}
-                                    className={({ isActive }) =>
-                                        `flex items-center ${isOpen ? "" : "justify-center"} p-3 rounded-md transition ${isActive ? "bg-white text-black" : "hover:bg-gray-700"}`
-                                    }
-                                >
-                                    <FontAwesomeIcon icon={item.icon} size="lg" />
-                                    <span className={`ml-3 transition-all duration-200 ${isOpen ? "opacity-100" : "opacity-0 hidden"}`}>
-                                        {item.label}
-                                    </span>
-                                </NavLink>
-                            </li>
-                        ))}
-
-                    {/* Affichage du profil utilisateur avec gestion du chargement */}
-                    <li className="flex items-center p-3 rounded-md hover:bg-gray-700">
-                        {isLoading ? (
-                            <Loader /> // Affichage du loader
-                        ) : error ? (
-                            <span className="text-red-500">Erreur: {error.message}</span>
-                        ) : (
-                            user && (
-                                <>
-                                    <img
-                                        src={user.profile_image_url || imageDefaultUser}
-                                        alt="Profile"
-                                        className={`${isOpen ? "w-10 h-10 rounded-full border-2 border-white" : "w-10 h-10 rounded-full"} transition-all duration-300 hover:scale-110`}
-                                    />
-                                    <span className={`ml-3 transition-all duration-200 ${isOpen ? "opacity-100" : "opacity-0 hidden"}`}>
-                                        {user.name}
-                                    </span>
-                                </>
-                            )
-                        )}
-                    </li>
-                </ul>
-            </nav>
-
-            <div className="p-4 border-t border-gray-700">
-                <LogoutButton className={`ml-3 transition-all duration-200 ${isOpen ? "opacity-100" : "opacity-0 hidden"}`} />
-            </div>
-        </div>
-    );
+      {/* Logout */}
+      <div className="p-4 border-t border-gray-700">
+        <LogoutButton
+          className={`ml-3 transition-all duration-200 ${
+            isOpen ? "opacity-100" : "opacity-0 hidden"
+          } text-pink-500 hover:text-white`}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default Sidebar;

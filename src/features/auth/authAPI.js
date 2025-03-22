@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { logout, setCredentials } from "./authSlice"; // Assure-toi que le chemin est correct
+import { jwtDecode } from "jwt-decode";
 
-// Récupération du token depuis le localStorage
 const baseQuery = fetchBaseQuery({
     baseUrl: "http://127.0.0.1:8000/api/users/",
     prepareHeaders: (headers, { getState }) => {
@@ -12,9 +13,54 @@ const baseQuery = fetchBaseQuery({
     },
 });
 
+// Middleware pour gérer le rafraîchissement du token
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+    let result = await baseQuery(args, api, extraOptions);
+
+    if (result.error && result.error.status === 401) {
+        console.log("Token expiré, tentative de rafraîchissement...");
+        
+        const refreshToken = localStorage.getItem("refresh_token");
+        if (!refreshToken) {
+            api.dispatch(logout());
+            return result;
+        }
+
+        // Tente de rafraîchir le token
+        const refreshResult = await baseQuery(
+            {
+                url: "token/refresh/",
+                method: "POST",
+                body: { refresh: refreshToken },
+            },
+            api,
+            extraOptions
+        );
+
+        if (refreshResult.data) {
+            const newAccessToken = refreshResult.data.access;
+            const decodedUser = jwtDecode(newAccessToken);
+
+            // Met à jour le token dans le state Redux
+            api.dispatch(setCredentials({
+                user: decodedUser,
+                access: newAccessToken,
+            }));
+
+            // Réessaye la requête initiale avec le nouveau token
+            result = await baseQuery(args, api, extraOptions);
+        } else {
+            console.log("Échec du rafraîchissement du token, déconnexion...");
+            api.dispatch(logout());
+        }
+    }
+
+    return result;
+};
+
 export const authApi = createApi({
     reducerPath: "authApi",
-    baseQuery,
+    baseQuery: baseQueryWithReauth,
     endpoints: (builder) => ({
         login: builder.mutation({
             query: (credentials) => ({
