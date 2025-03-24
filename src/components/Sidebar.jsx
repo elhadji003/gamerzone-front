@@ -6,19 +6,18 @@ import {
   faUser,
   faCog,
   faBars,
-  faFile,
   faGamepad,
 } from "@fortawesome/free-solid-svg-icons";
 import { useSelector } from "react-redux";
 import LogoutButton from "./LogoutButton";
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
+const Sidebar = ({ isOpen, setIsOpen, isChangeColor }) => {
   const { user } = useSelector((state) => state.auth);
   const isAdmin = user?.role === "admin";
 
   return (
     <div
-      className={`fixed left-0 h-full bg-neutral-900 text-white transition-all duration-300 shadow-lg ${
+      className={`fixed left-0 h-full text-white transition-all duration-300 shadow-lg ${
         isOpen ? "w-64" : "w-20"
       }`}
     >
@@ -27,16 +26,29 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         {isOpen && (
           <div>
             <span className="flex text-xl font-extrabold drop-shadow-neonWhite max-sm:text-sm tracking-wide uppercase">
-              {user?.pseudo}
+              {user?.pseudo || "Pseudo"}
             </span>
-            <span className="text-gray-500 text-[12px]">Pseudo</span>
+            <span className="flex items-center gap-3 text-gray-500 text-[12px]">
+              {user?.is_online ? "en ligne" : "déconnecté"}
+              <span className="text-gray-500 text-[12px] text-nowrap">
+                {user?.is_online ? (
+                  <span className="relative flex size-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+                    <span className="relative inline-flex size-3 rounded-full bg-sky-500"></span>
+                  </span>
+                ) : (
+                  <span className="relative flex size-3">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex size-3 rounded-full bg-red-500"></span>
+                  </span>
+                )}
+              </span>
+            </span>
           </div>
         )}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`${
-            isOpen ? "" : "m-auto"
-          } text-pink-500 hover:text-pink-400 transition`}
+          className={`${isOpen ? "" : "m-auto"}`}
         >
           <FontAwesomeIcon icon={faBars} size="lg" />
         </button>
@@ -52,7 +64,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               label: isAdmin ? "Dashboard" : "Gaming Posts",
             },
             { to: "/profil-user", icon: faUser, label: "Profil" },
-            { to: "/mes-article", icon: faFile, label: "Mes articles" },
             { to: "/parametre", icon: faCog, label: "Paramètres" },
           ].map((item) => (
             <li key={item.to}>
@@ -63,15 +74,23 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     isOpen ? "" : "justify-center"
                   } p-3 rounded-md font-semibold transition-all duration-200 ${
                     isActive
-                      ? "bg-pink-500 text-white shadow-lg"
-                      : "hover:bg-black hover:text-pink-500"
+                      ? `text-white shadow-lg ${
+                          isChangeColor ? "bg-pink-500" : "bg-green-500"
+                        }`
+                      : `${
+                          isChangeColor
+                            ? "hover:text-pink-500"
+                            : "hover:text-green-500"
+                        }`
                   }`
                 }
               >
                 <FontAwesomeIcon
                   icon={item.icon}
                   size="lg"
-                  className="transition-transform hover:scale-110 drop-shadow-[0_0_6px_#ec4899]"
+                  className={`transition-transform hover:scale-110 ${
+                    isChangeColor ? "drop-shadow-neon" : "drop-shadow-neonGreen"
+                  }`}
                 />
                 <span
                   className={`ml-3 transition-all duration-200 ${
@@ -89,9 +108,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Logout */}
       <div className="p-4 border-t border-gray-700">
         <LogoutButton
-          className={`ml-3 transition-all duration-200 ${
+          className={`transition-all duration-200 ${
             isOpen ? "opacity-100" : "opacity-0 hidden"
-          } text-pink-500 hover:text-white`}
+          } ${
+            isChangeColor
+              ? "text-pink-500 hover:text-pink-500"
+              : "text-green-500 hover:text-green-500"
+          }`}
         />
       </div>
     </div>
